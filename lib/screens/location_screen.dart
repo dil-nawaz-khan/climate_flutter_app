@@ -1,3 +1,4 @@
+import 'package:climate_flutter_app/screens/city_screen.dart';
 import 'package:climate_flutter_app/services/weather.dart';
 import 'package:climate_flutter_app/utils/constants.dart';
 import 'package:flutter/material.dart';
@@ -36,13 +37,16 @@ class _LocationScreenState extends State<LocationScreen> {
         return;
       }
 
-      double temp = weatherData['main']['temp'];
+      double temp =
+          weatherData['main']?['temp'] ??
+          weatherData['list']?[0]?['main']?['temp'];
       temperature = temp.toInt();
       message = weatherModel.getMessage(temperature);
       weatherIcon = weatherModel.getWeatherIcon(
-        weatherData['weather'][0]['id'],
+        weatherData['weather']?[0]?['id'] ??
+            weatherData['list']?[0]?['weather']?[0]?['id'],
       );
-      cityName = weatherData['name'];
+      cityName = weatherData['name'] ?? weatherData['city']?['name'];
     });
   }
 
@@ -73,13 +77,29 @@ class _LocationScreenState extends State<LocationScreen> {
                   TextButton(
                     onPressed: () async {
                       var weatherData = await weatherModel.getLocationWeather();
-                      print('clicked: $weatherData');
+
                       updateUI(weatherData);
                     },
                     child: Icon(Icons.near_me, size: 50.0),
                   ),
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      var typedName = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return CityScreen();
+                          },
+                        ),
+                      );
+                      if (typedName != null) {
+                        var weatherData = await weatherModel.getCityWeather(
+                          typedName,
+                        );
+
+                        updateUI(weatherData);
+                      }
+                    },
                     child: Icon(Icons.location_city, size: 50.0),
                   ),
                 ],

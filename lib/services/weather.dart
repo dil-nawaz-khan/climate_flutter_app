@@ -2,6 +2,7 @@ import 'package:climate_flutter_app/services/networking.dart';
 import 'package:climate_flutter_app/services/location.dart';
 
 const apiKey = '49e87994dd9d5eb38a6a889152e20a01';
+const authority = 'api.openweathermap.org';
 
 class WeatherModel {
   Future getLocationWeather() async {
@@ -10,7 +11,7 @@ class WeatherModel {
       await location.getCurrentLocation();
 
       NetworkHelper networkHelper = NetworkHelper(
-        authority: 'api.openweathermap.org',
+        authority: authority,
         unencodedPath: '/data/2.5/weather',
         queryParameters: {
           'lat': location.latitude.toString(),
@@ -22,9 +23,27 @@ class WeatherModel {
 
       var weatherData = await networkHelper.getData();
       return weatherData;
-    } catch (e, stacktrace) {
-      print('⚠️ Error in getLocationWeather: $e');
-      print('🧵 Stacktrace: $stacktrace');
+    } catch (e) {
+      // print('⚠️ Error in getLocationWeather: $e');
+      // print('🧵 Stacktrace: $stacktrace');
+      return null; // Or handle fallback logic
+    }
+  }
+
+  Future getCityWeather(String cityName) async {
+    try {
+      NetworkHelper networkHelper = NetworkHelper(
+        authority: authority,
+        unencodedPath: '/data/2.5/forecast',
+        queryParameters: {'q': cityName, 'appid': apiKey, 'units': 'metric'},
+      );
+
+      var weatherData = await networkHelper.getData();
+      return weatherData;
+    } catch (e) {
+      // } catch (e, stacktrace) {
+      // print('⚠️ Error in getLocationWeather: $e');
+      // print('🧵 Stacktrace: $stacktrace');
       return null; // Or handle fallback logic
     }
   }
