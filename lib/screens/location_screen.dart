@@ -1,8 +1,11 @@
+import 'package:climate_flutter_app/services/weather.dart';
 import 'package:climate_flutter_app/utils/constants.dart';
 import 'package:flutter/material.dart';
 
 class LocationScreen extends StatefulWidget {
-  const LocationScreen({super.key});
+  const LocationScreen({super.key, this.locationWeather});
+
+  final locationWeather;
 
   @override
   // ignore: library_private_types_in_public_api
@@ -10,6 +13,39 @@ class LocationScreen extends StatefulWidget {
 }
 
 class _LocationScreenState extends State<LocationScreen> {
+  late int temperature;
+  late String weatherIcon;
+  late String message;
+  late String cityName;
+
+  WeatherModel weatherModel = WeatherModel();
+
+  @override
+  void initState() {
+    super.initState();
+    updateUI(widget.locationWeather);
+  }
+
+  void updateUI(dynamic weatherData) {
+    setState(() {
+      if (weatherData == null) {
+        temperature = 0;
+        weatherIcon = 'Error';
+        message = 'Unable to get weahter data';
+        cityName = '';
+        return;
+      }
+
+      double temp = weatherData['main']['temp'];
+      temperature = temp.toInt();
+      message = weatherModel.getMessage(temperature);
+      weatherIcon = weatherModel.getWeatherIcon(
+        weatherData['weather'][0]['id'],
+      );
+      cityName = weatherData['name'];
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,7 +71,11 @@ class _LocationScreenState extends State<LocationScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      var weatherData = await weatherModel.getLocationWeather();
+                      print('clicked: $weatherData');
+                      updateUI(weatherData);
+                    },
                     child: Icon(Icons.near_me, size: 50.0),
                   ),
                   TextButton(
@@ -48,15 +88,15 @@ class _LocationScreenState extends State<LocationScreen> {
                 padding: EdgeInsets.only(left: 15.0),
                 child: Row(
                   children: <Widget>[
-                    Text('32°', style: kTempTextStyle),
-                    Text('☀️', style: kConditionTextStyle),
+                    Text('$temperature°', style: kTempTextStyle),
+                    Text(weatherIcon, style: kConditionTextStyle),
                   ],
                 ),
               ),
               Padding(
                 padding: EdgeInsets.only(right: 15.0),
                 child: Text(
-                  "It's 🍦 time in San Francisco!",
+                  '$message in $cityName',
                   textAlign: TextAlign.right,
                   style: kMessageTextStyle,
                 ),
@@ -68,3 +108,9 @@ class _LocationScreenState extends State<LocationScreen> {
     );
   }
 }
+
+/*
+  double temperature = jsonResponse['main']['temp'];
+      int condition = jsonResponse['weather'][0]['id'];
+      String cityName = jsonResponse['name'];
+*/

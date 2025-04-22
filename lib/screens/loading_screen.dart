@@ -1,8 +1,8 @@
+import 'package:climate_flutter_app/screens/location_screen.dart';
+import 'package:climate_flutter_app/services/weather.dart';
 import 'package:flutter/material.dart';
-import 'dart:convert' as convert;
-import 'package:http/http.dart' as http;
 
-import 'package:climate_flutter_app/services/location.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class LoadingScreen extends StatefulWidget {
   const LoadingScreen({super.key});
@@ -20,36 +20,23 @@ class _LoadingScreenState extends State<LoadingScreen> {
   }
 
   void getLocation() async {
-    Location location = Location();
-    await location.getCurrentLocation();
-
-    print(location.latitude);
-    print(location.longitude);
-  }
-
-  // https://api.openweathermap.org/data/2.5/weather?lat=44.34&lon=10.99&appid=49e87994dd9d5eb38a6a889152e20a01
-  void getData() async {
-    var url = Uri.https('api.openweathermap.org', '/data/2.5/weather', {
-      'lat': '44.34',
-      'lon': '10.99',
-      'appid': '49e87994dd9d5eb38a6a889152e20a01',
-    });
-
-    // Await the http get response, then decode the json-formatted response.
-    var response = await http.get(url);
-    if (response.statusCode == 200) {
-      var jsonResponse =
-          convert.jsonDecode(response.body) as Map<String, dynamic>;
-      var itemCount = jsonResponse;
-      print('$itemCount');
-    } else {
-      print('Request failed with status: ${response.statusCode}.');
-    }
+    var weatherData = await WeatherModel().getLocationWeather();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) {
+          return LocationScreen(locationWeather: weatherData);
+        },
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    getData();
-    return Scaffold();
+    return Scaffold(
+      body: Center(
+        child: SpinKitDoubleBounce(color: Colors.white, size: 100.0),
+      ),
+    );
   }
 }
